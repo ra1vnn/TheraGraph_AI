@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { formatDateTime } from "@/app/lib/format";
 import type { Formulation } from "@/app/lib/types";
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
@@ -61,9 +62,7 @@ export function ClinicalReport({ formulation, patientName }: ClinicalReportProps
   }
 
   const payload = JSON.stringify(formulation, null, 2);
-  const generated = formulation.generated_at
-    ? new Date(formulation.generated_at).toLocaleString()
-    : "—";
+  const generated = formatDateTime(formulation.generated_at);
 
   const copyPayload = async () => {
     try {

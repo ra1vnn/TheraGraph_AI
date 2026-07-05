@@ -1,9 +1,10 @@
-import { listPatients } from "@/app/lib/api";
 import { ControlVault } from "@/app/components/ControlVault";
+import type { Patient } from "@/app/lib/types";
 
 export default async function VaultPage() {
-  let patients: Awaited<ReturnType<typeof listPatients>> = [];
+  let patients: Patient[] = [];
   let backendOnline = true;
+  let dataUnavailableMessage: string | null = null;
 
   try {
     const base =
@@ -13,12 +14,31 @@ export default async function VaultPage() {
       cache: "no-store",
     }).catch(() => null);
     backendOnline = health?.ok ?? false;
-    patients = await listPatients();
+    if (backendOnline) {
+      const patientResponse = await fetch(`${base}/api/patients`, {
+        cache: "no-store",
+      });
+      if (patientResponse.ok) {
+        patients = (await patientResponse.json()) as Patient[];
+      } else {
+        const detail = await patientResponse
+          .json()
+          .then((body: { detail?: string }) => body.detail)
+          .catch(() => null);
+        dataUnavailableMessage =
+          detail ||
+          `Patient store unavailable (${patientResponse.status}). Check Supabase configuration.`;
+      }
+    }
   } catch {
     backendOnline = false;
   }
 
   return (
-    <ControlVault initialPatients={patients} backendOnline={backendOnline} />
+    <ControlVault
+      initialPatients={patients}
+      backendOnline={backendOnline}
+      dataUnavailableMessage={dataUnavailableMessage}
+    />
   );
 }

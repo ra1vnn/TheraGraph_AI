@@ -12,7 +12,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 52% 42% at 50% 48%, rgba(9,9,11,0.72) 0%, rgba(9,9,11,0.28) 58%, transparent 100%)",
+            "radial-gradient(ellipse 58% 48% at 50% 48%, rgba(9,9,11,0.9) 0%, rgba(9,9,11,0.54) 54%, rgba(9,9,11,0.12) 100%)",
         }}
       />
 
@@ -22,13 +22,13 @@ export function Hero() {
           Clinical memory graph · powered by Cognee
         </p>
 
-        <h1 className="text-balance text-5xl font-semibold tracking-tight text-text sm:text-6xl lg:text-7xl">
+        <h1 className="text-balance text-5xl font-semibold tracking-tight text-text drop-shadow-[0_2px_30px_rgba(0,0,0,0.95)] sm:text-6xl lg:text-7xl">
           Medical AI that never
           <br />
-          <span className="text-white/60">forgets a patient</span>
+          <span className="text-white/[0.72]">forgets a patient</span>
         </h1>
 
-        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-text-secondary sm:text-lg">
+        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-text-secondary drop-shadow-[0_2px_18px_rgba(0,0,0,0.9)] sm:text-lg">
           A permanent, evolving memory for personalized medicine — genome to
           therapy, remembered across every visit.
         </p>
@@ -42,7 +42,7 @@ export function Hero() {
           </Link>
           <Link
             href="/login"
-            className="rounded-md border border-white/15 px-6 py-3 text-sm font-medium text-text transition-colors hover:border-white/40"
+            className="rounded-md border border-white/20 bg-white/[0.08] px-6 py-3 text-sm font-medium text-text backdrop-blur-sm transition-colors hover:border-white/[0.45] hover:bg-white/[0.12]"
           >
             Sign in
           </Link>

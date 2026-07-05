@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { getTimeline, sendFeedback } from "@/app/lib/api";
+import { formatDateTime } from "@/app/lib/format";
 import type { FeedbackEntry } from "@/app/lib/types";
 import { Card } from "@/app/components/ui/Card";
 import { Toaster, toast } from "@/app/components/ui/Toast";
@@ -130,9 +131,7 @@ export function Timeline({ patientId, initialEntries }: TimelineProps) {
                 />
                 <div className="flex items-center gap-2">
                   <time className="text-xs font-medium text-text-secondary">
-                    {entry.created_at
-                      ? new Date(entry.created_at).toLocaleString()
-                      : "—"}
+                    {formatDateTime(entry.created_at)}
                   </time>
                   <span className="text-xs text-text-secondary/60">
                     · {relativeTime(entry.created_at)}

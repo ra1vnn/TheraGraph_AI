@@ -237,7 +237,7 @@ export function DnaHelix() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.65] sm:opacity-75"
     />
   );
 }

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPatient } from "@/app/lib/api";
+import { formatDate } from "@/app/lib/format";
 import type { Patient } from "@/app/lib/types";
 import { Badge } from "@/app/components/ui/Badge";
 import { Button } from "@/app/components/ui/Button";
@@ -14,11 +15,39 @@ import { SignOutButton } from "@/app/components/auth/SignOutButton";
 interface ControlVaultProps {
   initialPatients: Patient[];
   backendOnline: boolean;
+  dataUnavailableMessage?: string | null;
 }
+
+const demoLaneByMrn: Record<
+  string,
+  { lane: string; title: string; summary: string }
+> = {
+  "MO-4471": {
+    lane: "PGx pain safety",
+    title: "CYP2D6 prodrug failure + sulfonamide allergy",
+    summary: "Avoids codeine, tramadol, and celecoxib; builds a non-opioid regimen.",
+  },
+  "DR-2210": {
+    lane: "Dose genetics",
+    title: "TPMT poor metabolizer",
+    summary: "Converts a dangerous standard thiopurine plan into a micro-dose workflow.",
+  },
+  "AK-9982": {
+    lane: "Anticoagulation",
+    title: "CYP2C9 + VKORC1 warfarin sensitivity",
+    summary: "Connects two genes to safer stroke-prevention dosing and monitoring.",
+  },
+  "LM-7788": {
+    lane: "Custom Rx",
+    title: "MFSD8 CLN7 splice defect",
+    summary: "Designs a splice-switching ASO path for an n-of-1 Batten disease case.",
+  },
+};
 
 export function ControlVault({
   initialPatients,
   backendOnline,
+  dataUnavailableMessage,
 }: ControlVaultProps) {
   const router = useRouter();
   const [patients, setPatients] = useState(initialPatients);
@@ -51,10 +80,11 @@ export function ControlVault({
         .slice(0, 5),
     [patients],
   );
+  const canEditPatients = backendOnline && !dataUnavailableMessage;
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !canEditPatients) return;
     setCreating(true);
     setError(null);
     try {
@@ -84,7 +114,7 @@ export function ControlVault({
           <SignOutButton />
           <CommandBar
             patients={patients}
-            onNewPatient={() => setShowForm(true)}
+            onNewPatient={canEditPatients ? () => setShowForm(true) : undefined}
           />
         </div>
       </header>
@@ -94,12 +124,25 @@ export function ControlVault({
           Backend offline — start FastAPI on port 8000 to load patients.
         </Card>
       )}
+      {backendOnline && dataUnavailableMessage && (
+        <Card className="border-amber-300 bg-amber-50 text-sm text-amber-900">
+          Patient data is not available yet. Add{" "}
+          <code className="rounded bg-amber-100 px-1">SUPABASE_URL</code> and{" "}
+          <code className="rounded bg-amber-100 px-1">SUPABASE_KEY</code> to{" "}
+          <code className="rounded bg-amber-100 px-1">backend/.env</code>, then
+          restart FastAPI.
+        </Card>
+      )}
 
       <div className="grid flex-1 gap-6 lg:grid-cols-2">
         <Card className="flex flex-col">
           <div className="mb-4 flex items-center justify-between gap-2">
             <p className="micro-label text-text-secondary">Patients</p>
-            <Button variant="secondary" onClick={() => setShowForm((v) => !v)}>
+            <Button
+              variant="secondary"
+              disabled={!canEditPatients}
+              onClick={() => setShowForm((v) => !v)}
+            >
               New Patient
             </Button>
           </div>
@@ -112,24 +155,48 @@ export function ControlVault({
           <ul className="flex-1 space-y-1 overflow-y-auto">
             {filtered.length === 0 ? (
               <li className="py-8 text-center text-sm text-text-secondary">
-                {patients.length === 0
+                {dataUnavailableMessage
+                  ? "Connect Supabase to load seeded demo patients."
+                  : patients.length === 0
                   ? "No patients yet. Create one to begin intake."
                   : "No matches."}
               </li>
             ) : (
               filtered.map((p) => (
-                <li key={p.id}>
+                <li key={p.id} className="border-b border-border/60 last:border-0">
                   <Link
                     href={`/patients/${p.id}/intake`}
-                    className="flex items-center justify-between rounded px-3 py-2 transition-colors hover:bg-bg"
+                    className="block rounded px-3 py-3 transition-colors hover:bg-bg"
                   >
-                    <div>
-                      <p className="font-medium">{p.name}</p>
-                      {p.mrn && (
-                        <p className="text-xs text-text-secondary">{p.mrn}</p>
-                      )}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium">{p.name}</p>
+                          {p.mrn && demoLaneByMrn[p.mrn] && (
+                            <Badge tone="accent">{demoLaneByMrn[p.mrn].lane}</Badge>
+                          )}
+                        </div>
+                        {p.mrn && (
+                          <p className="mt-0.5 text-xs text-text-secondary">{p.mrn}</p>
+                        )}
+                      </div>
+                      <Badge tone="accent">Open</Badge>
                     </div>
-                    <Badge tone="accent">Open</Badge>
+                    {p.mrn && demoLaneByMrn[p.mrn] && (
+                      <div className="mt-3 rounded border border-border/60 bg-bg/70 px-3 py-2">
+                        <p className="text-sm font-medium">
+                          {demoLaneByMrn[p.mrn].title}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                          {demoLaneByMrn[p.mrn].summary}
+                        </p>
+                      </div>
+                    )}
+                    {p.mrn && !demoLaneByMrn[p.mrn] && (
+                      <p className="mt-2 text-xs text-text-secondary">
+                        Standard patient workspace
+                      </p>
+                    )}
                   </Link>
                 </li>
               ))
@@ -142,10 +209,13 @@ export function ControlVault({
           {recent.length === 0 ? (
             <div className="mt-8 text-center">
               <p className="text-sm text-text-secondary">
-                Upload genomic data to build a per-patient Cognee memory graph.
+                {dataUnavailableMessage
+                  ? "Connect Supabase to restore patient history and seeded demo records."
+                  : "Upload genomic data to build a per-patient Cognee memory graph."}
               </p>
               <Button
                 className="mt-4"
+                disabled={!canEditPatients}
                 onClick={() => setShowForm(true)}
               >
                 Create first patient
@@ -156,14 +226,19 @@ export function ControlVault({
               {recent.map((p) => (
                 <li
                   key={p.id}
-                  className="flex items-center justify-between border-b border-border/50 pb-2 text-sm"
+                  className="border-b border-border/50 pb-3 text-sm last:border-0"
                 >
-                  <span>{p.name}</span>
-                  <time className="text-xs text-text-secondary">
-                    {p.created_at
-                      ? new Date(p.created_at).toLocaleDateString()
-                      : "—"}
-                  </time>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium">{p.name}</span>
+                    <time className="text-xs text-text-secondary">
+                      {formatDate(p.created_at)}
+                    </time>
+                  </div>
+                  {p.mrn && demoLaneByMrn[p.mrn] && (
+                    <p className="mt-1 text-xs text-text-secondary">
+                      {demoLaneByMrn[p.mrn].title}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>

@@ -20,7 +20,10 @@ Backend:
 
 ```bash
 cd backend
+python3.12 -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env            # fill Cognee Cloud + Supabase values
 ./run.sh                      # uvicorn app.main:app --reload --port 8000
 ```
 
@@ -28,6 +31,8 @@ Frontend (separate terminal):
 
 ```bash
 cd frontend
+cp .env.local.example .env.local # fill Supabase public values if using auth
+npm install
 npm run dev                   # http://localhost:3000
 ```
 
@@ -101,6 +106,22 @@ Hero patient **Maya Okafor** (CYP2D6 *4/*4 poor metabolizer): ingest her files �
 inflammatory pain" → ledger shows `MOD_ALPHA_BASE 75% + MOD_BETA_ADJUVANT 25%` with
 `CODEINE`/`TRAMADOL` flagged and excluded → add a Timeline observation to trigger `improve` →
 delete the patient to demonstrate `forget`. Full 3-minute script: §15 of the source-of-truth doc.
+
+Submission demo seed + smoke:
+
+```bash
+cd backend
+source .venv/bin/activate
+python scripts/seed_submission_demo.py --verify
+python scripts/smoke_submission_demo.py
+```
+
+Fast demo lanes:
+
+- Maya Okafor — CYP2D6 prodrug failure + sulfonamide allergy → safer non-opioid pain regimen.
+- Daniel Reyes — TPMT poor metabolizer → thiopurine micro-dose + CBC monitoring.
+- Aisha Karim — CYP2C9/VKORC1 sensitivity → genotype-aware anticoagulation decision.
+- Leo Martinez — MFSD8 CLN7 splice defect → n-of-1 splice-switching ASO design.
 
 ## API
 
